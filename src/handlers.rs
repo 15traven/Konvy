@@ -32,20 +32,26 @@ pub async fn handle_convert_request(bot: Bot, msg: Message) -> HandlerResult {
     let re = Regex::new(r"^(\d+(?:\.\d+)?)\s*(\w+)\s+in\s+(\w+)$").unwrap();
 
     if let Some(caps) = &re.captures(msg.text().unwrap()) {
-        let from_factor = match consts::FACTORS.get(&caps[2]) {
-            Some(f) => f,
+        let (from_category, from_factor) = match consts::FACTORS.get(&caps[2]) {
+            Some((c, f)) => (c, f),
             None => {
                 bot.send_message(msg.chat.id, format!("❌ Unsupported unit: {}", &caps[2])).await?;
                 return Ok(())
             }
         };
-        let to_factor = match consts::FACTORS.get(&caps[3]) {
-            Some(f) => f,
+        let (to_category, to_factor) = match consts::FACTORS.get(&caps[3]) {
+            Some((c, f)) => (c, f),
             None => {
                 bot.send_message(msg.chat.id, format!("❌ Unsupported unit: {}", &caps[3])).await?;
                 return Ok(())
             }
         };
+        
+        if from_category != to_category {
+            bot.send_message(msg.chat.id, format!("❌ Cannot convert {} to {} (different categories)", &caps[2], &caps[3])).await?;
+            return Ok(())
+        }
+
         let value = caps[1].parse::<f64>().unwrap();
         
         let result = value * (from_factor / to_factor);
