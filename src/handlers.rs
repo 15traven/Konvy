@@ -29,7 +29,7 @@ pub async fn handle_help_command(bot: Bot, msg: Message) -> HandlerResult {
 }
 
 pub async fn handle_convert_request(bot: Bot, msg: Message) -> HandlerResult {
-    let re = Regex::new(r"^(\d+(?:\.\d+)?)\s*(\w+)\s+in\s+(\w+)$").unwrap();
+    let re = Regex::new(r"^(\d+(?:\.\d+)?|\s*)\s*(\w+)\s+in\s+(\w+)$").unwrap();
 
     if let Some(caps) = &re.captures(msg.text().unwrap()) {
         let (from_category, from_factor) = match consts::FACTORS.get(&caps[2]) {
@@ -52,7 +52,7 @@ pub async fn handle_convert_request(bot: Bot, msg: Message) -> HandlerResult {
             return Ok(())
         }
 
-        let value = caps[1].parse::<f64>().unwrap();
+        let value = caps[1].parse::<f64>().unwrap_or(1.0);
         
         let result = value * (from_factor / to_factor);
         bot.send_message(msg.chat.id, result.to_string()).await?;
