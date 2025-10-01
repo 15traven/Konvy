@@ -1,13 +1,29 @@
 use std::error::Error;
-use std::collections::HashMap;
-use teloxide::prelude::*;
+use teloxide::{
+    prelude::*,
+    types::{InlineKeyboardMarkup, InlineKeyboardButton}
+};
 use regex::Regex;
-use crate::consts::FACTORS;
+use crate::consts;
 
 pub type HandlerResult = Result<(), Box<dyn Error + Send + Sync>>;
 
 pub async fn handle_start_command(bot: Bot, msg: Message) -> HandlerResult {
-    bot.send_message(msg.chat.id, "👋 Hello!\n\nThis bot was created to help you quickly and easily convert different units between each other.\n\nTo use, simply send your request.\nFor example\n\n34kg in pounds").await?;
+    bot.send_message(msg.chat.id, "👋 Hello!\nThis bot was created to help you quickly and easily convert different units between each other.").await?;
+    handle_help_command(bot, msg).await?;
+    
+    Ok(())
+}
+
+pub async fn handle_help_command(bot: Bot, msg: Message) -> HandlerResult {
+    let url = url::Url::parse(consts::HELP_DOC_LINK)?;
+    let keyboard = InlineKeyboardMarkup::new([[
+        InlineKeyboardButton::url("Click here", url)
+    ]]);
+    
+    bot.send_message(msg.chat.id, "🤔 How to use this bot?\nSimply send your request.\nFor example\n\n34kg in lb\n\nTo check all supported units and their shortcodes, click the button below.")
+        .reply_markup(keyboard)
+        .await?;
 
     Ok(())
 }
@@ -16,14 +32,14 @@ pub async fn handle_convert_request(bot: Bot, msg: Message) -> HandlerResult {
     let re = Regex::new(r"^(\d+(?:\.\d+)?)\s*(\w+)\s+in\s+(\w+)$").unwrap();
 
     if let Some(caps) = &re.captures(msg.text().unwrap()) {
-        let from_factor = match FACTORS.get(&caps[2]) {
+        let from_factor = match consts::FACTORS.get(&caps[2]) {
             Some(f) => f,
             None => {
                 bot.send_message(msg.chat.id, format!("❌ Unsupported unit: {}", &caps[2])).await?;
                 return Ok(())
             }
         };
-        let to_factor = match FACTORS.get(&caps[3]) {
+        let to_factor = match consts::FACTORS.get(&caps[3]) {
             Some(f) => f,
             None => {
                 bot.send_message(msg.chat.id, format!("❌ Unsupported unit: {}", &caps[3])).await?;

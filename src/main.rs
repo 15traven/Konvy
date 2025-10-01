@@ -12,7 +12,9 @@ mod consts;
 #[command(rename_rule = "lowercase")]
 enum Command {
     #[command()]
-    Start
+    Start,
+    #[command()]
+    Help
 }
 
 #[tokio::main]
@@ -24,6 +26,7 @@ async fn main() {
             Update::filter_message()
                 .filter_command::<Command>()
                 .branch(case![Command::Start].endpoint(handle_start_command))
+                .branch(case![Command::Help].endpoint(handle_help_command))
         )
         .branch(
             Update::filter_message()

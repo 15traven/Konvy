@@ -1,5 +1,7 @@
 use phf::phf_map;
 
+pub const HELP_DOC_LINK: &str = "https://github.com/15traven/konvy";
+
 pub static FACTORS: phf::Map<&'static str, f64> = phf_map! {
     // Mass
     "kg" => 1.0,
