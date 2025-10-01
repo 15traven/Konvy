@@ -1,11 +1,36 @@
-use teloxide::prelude::*;
+use teloxide::{
+    prelude::*,
+    macros::BotCommands
+};
+use dptree::case;
+use handlers::*;
+
+mod handlers;
+
+#[derive(BotCommands, Clone, Debug)]
+#[command(rename_rule = "lowercase")]
+enum Command {
+    #[command()]
+    Start
+}
 
 #[tokio::main]
 async fn main() {
     let bot = Bot::from_env();
 
-    teloxide::repl(bot, |bot: Bot, msg: Message| async move {
-        bot.send_dice(msg.chat.id).await?;
-        Ok(())
-    }).await;
+    let schema = dptree::entry()
+        .branch(
+            Update::filter_message()
+                .filter_command::<Command>()
+                .branch(case![Command::Start].endpoint(handle_start_command))
+        )
+        .branch(
+            Update::filter_message()
+                .endpoint(handle_convert_request)
+        );
+
+    Dispatcher::builder(bot, schema)
+        .build()
+        .dispatch()
+        .await;
 }
