@@ -6,6 +6,7 @@ use dptree::case;
 use handlers::*;
 
 mod handlers;
+mod consts;
 
 #[derive(BotCommands, Clone, Debug)]
 #[command(rename_rule = "lowercase")]
