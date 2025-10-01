@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+regex = "1.11.3"
 teloxide = { version = "0.17.0", features = ["macros"] }
 tokio = { version = "1.47.1", features = ["rt-multi-thread", "macros"] }
